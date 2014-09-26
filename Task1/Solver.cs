@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.IO;
+using System.Threading;
 
 namespace Task1
 {
@@ -23,7 +24,7 @@ namespace Task1
             
         }
 
-        private void Generate(int Dimention, int Range)
+        private void Generate(int Dimention, int Range) // генерация векторов (размерность, диапазон значений)
         {
             Random rand = new Random();
             for (int i = 0; i < Dimention - 1; i++)
@@ -45,30 +46,24 @@ namespace Task1
             p[Dimention - 1] = a[Dimention - 2];
             q[Dimention - 2] = c[Dimention - 2];
             q[Dimention - 1] = b[Dimention - 1];
-            GenerateX1();
             Generate_f();
+            Thread.Sleep(1);
     
         }
-        private void GenerateX1()
+        private void Generate_f() // генерация вектора f для еденичного решения
         {
-            for (int i = 0; i < n; i++)
-            {
-                x[i] = 1;
-            }
-        }
-        private void Generate_f()
-        {
-            f[0] = b[0] + c[0] + p[0] + q[0];
+            f[0] = (b[0] + c[0] + p[0] + q[0]);
             for (int i = 1; i < n-3; i++)
             {
-                f[i] = a[i - 1] + b[i] + c[i] + p[i] + q[i];
+                f[i] = (a[i - 1] + b[i] + c[i] + p[i] + q[i]);
             }
-            f[n - 3] = a[n - 4] + b[n - 3] + c[n - 3] + q[n - 3];
-            f[n - 2] = a[n - 3] + b[n - 2] + c[n - 2];
-            f[n - 1] = a[n - 2] + b[n - 1];
+            f[n - 3] = (a[n - 4] + b[n - 3] + c[n - 3] + q[n - 3]);
+            f[n - 2] = (a[n - 3] + b[n - 2] + c[n - 2]);
+            f[n - 1] = (a[n - 2] + b[n - 1]);
         }
 
-        public void Form_Answer(int count, int Dimention, int Range, ref double avg_1, ref double avg_2)
+        public void Form_Answer(int count, int Dimention, int Range, ref double avg_1, ref double avg_2)// формирование выходных данных
+            //( число тесов, размерность, диапазон, относ. погрешность, оценка точности)
         {
             n = Dimention;
             a = new double[n - 1];
@@ -79,19 +74,21 @@ namespace Task1
             f = new double[n];
             x = new double[n];
             solution = new double[n];
-            Generate(n, Range);
+            avg_2 = 0;
             for (int i = 0; i < count; i++)
             {
+                Generate(n, Range);
                 while (Solve() == null)
                 {
                     Generate(n, Range);
                 }
-                avg_1 += Math.Abs(1 - Math.Max(solution.Max(), Math.Abs(solution.Min())));
+                avg_1 += Math.Max(Math.Abs(solution.Max() - 1), Math.Abs(solution.Min() - 1));
+                avg_2 = Math.Max(avg_2, Math.Max(Math.Abs(solution.Max() - 1), Math.Abs(solution.Min() - 1)));
             }
             avg_1 /= count;
         }
 
-        public bool Check_Vectors()
+        private bool Check_Vectors()
         {
             for (int i = 0; i < n - 1; i++)
             {
@@ -106,7 +103,7 @@ namespace Task1
             return true;
         }
 
-        public double[] Solve()
+        public double[] Solve()// решение системы
         {
             double div_result;
             // Обнуление вектора а
