@@ -11,3 +11,4 @@ D:\Labs\3 курс\1 семестр\МВ\Task1\Task1\bin\Release\Task1.pdb
 D:\Labs\3 курс\1 семестр\МВ\Task1\Task1\obj\x86\Release\Task1.Properties.Resources.resources
 D:\Labs\3 курс\1 семестр\МВ\Task1\Task1\obj\x86\Release\Task1.csproj.GenerateResource.Cache
 D:\Labs\3 курс\1 семестр\МВ\Task1\Task1\obj\x86\Release\Task1.csprojResolveAssemblyReference.cache
+D:\Labs\3 курс\1 семестр\МВ\Task1\Task1\obj\x86\Release\Task1.Form1.resources

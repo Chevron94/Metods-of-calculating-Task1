@@ -19,8 +19,6 @@ namespace Task1
         double[] f;
         double[] x;
         double[] x_real;
-        double[] solution;
-        double[] solution_real;
 
         public Solver()
         {
@@ -32,19 +30,20 @@ namespace Task1
             Random rand = new Random();
             for (int i = 0; i < Dimention - 1; i++)
             {
-                a[i] = 1.001 * rand.Next(-Range, Range);
-                b[i] = 1.001 * rand.Next(-Range, Range);
-                c[i] = 1.001 * rand.Next(-Range, Range);
-                p[i] = 1.001 * rand.Next(-Range, Range);
-                q[i] = 1.001 * rand.Next(-Range, Range);
-                x_real[i] = 1.001 * rand.Next(-Range, Range);
+                a[i] = (1 + rand.NextDouble()) * rand.Next(-Range, Range);
+                b[i] = (1 + rand.NextDouble()) * rand.Next(-Range, Range);
+                c[i] = (1 + rand.NextDouble()) * rand.Next(-Range, Range);
+                p[i] = (1 + rand.NextDouble()) * rand.Next(-Range, Range);
+                q[i] = (1 + rand.NextDouble()) * rand.Next(-Range, Range);
+                x_real[i] = (1 + rand.NextDouble()) * rand.Next(-Range, Range);//(1+ rand.NextDouble()) * rand.Next(-Range, Range);
+                //x_real[i] = 1;
                 x[i] = 1;
             }
-            b[Dimention - 1] = 1.001 * rand.Next(-Range, Range);
-            p[Dimention - 1] = 1.001 * rand.Next(-Range, Range);
-            q[Dimention - 1] = 1.001 * rand.Next(-Range, Range);
-            f[Dimention - 1] = 1.001*rand.Next(-Range, Range);
-            x_real[Dimention - 1] = 1.001 * rand.Next(-Range, Range);
+            b[Dimention - 1] = (1 + rand.NextDouble()) * rand.Next(-Range, Range);
+            p[Dimention - 1] = (1 + rand.NextDouble()) * rand.Next(-Range, Range);
+            q[Dimention - 1] = (1 + rand.NextDouble()) * rand.Next(-Range, Range);
+            f[Dimention - 1] = (1 + rand.NextDouble()) * rand.Next(-Range, Range);
+            x_real[Dimention - 1] = (1 + rand.NextDouble()) * rand.Next(-Range, Range);//1.001 * rand.Next(-Range, Range);
             x[Dimention - 1] = 1;
 
 
@@ -69,7 +68,7 @@ namespace Task1
             f[n - 2] = (a[n - 3] + b[n - 2] + c[n - 2]);
             f[n - 1] = (a[n - 2] + b[n - 1]);
         }
-        private void Generate_f_real()
+        private void Generate_f_real() // генерация вектора f_real для сгенерированного решения
         {
             f_real[0] = b[0] * x_real[0] + c[0] * x_real[1] + p[0] * x_real[n - 2] + q[0] * x_real[n - 1];
             for (int i = 1; i < n - 3; i++)
@@ -81,7 +80,7 @@ namespace Task1
             f_real[n - 1] = (a[n - 2] * x_real[n - 2] + b[n - 1] * x_real[n - 1]);
         }
 
-        private double Get_Avg(double[] solution, double[] x)
+        private double Get_Avg(double[] solution, double[] x) // Вычисление погрешности
         {
             double res = 0;
             for (int i = 0; i < n; i++)
@@ -109,42 +108,23 @@ namespace Task1
             x = new double[n] ;
             x_real = new double[n];
 
-            solution_real = new double[n];
-            solution = new double[n];
             avg_1 = 0;
             avg_2 = 0;
             for (int i = 0; i < count; i++)
             {
                 Generate(n, Range);
-                while (Solve() == null)
+                while (Solve(n,a,b,c,p,q,f) == null)
                 {
                     Generate(n, Range);
                 }
-                avg_1 += Get_Avg(solution_real, x_real);
-                avg_2 += Get_Avg(solution, x);
-                //avg_1 += Math.Max(Math.Abs(solution.Max() - 1), Math.Abs(solution.Min() - 1));
-                //avg_2 = Math.Max(avg_2, Math.Max(Math.Abs(solution.Max() - 1), Math.Abs(solution.Min() - 1)));
+                avg_1 += Get_Avg(f_real, x_real);
+                avg_2 += Get_Avg(f, x);
             }
             avg_1 /= count;
             avg_2 /= count;
         }
 
-        private bool Check_Vectors()
-        {
-            for (int i = 0; i < n - 1; i++)
-            {
-                if (a[i] != 0 || c[i] != 0)
-                    return false;
-            }
-            for (int i = 0; i < n - 2; i++)
-                if (p[i] != 0 || q[i] != 0)
-                    return false;
-            if (p[n - 1] != 0 || q[n - 2] != 0)
-                return false;
-            return true;
-        }
-
-        public double[] Solve()// решение системы
+        public double[] Solve(int n, double[] a, double[] b, double[] c, double[] p, double[] q, double[] f)// решение системы
         {
             double div_result;
             // Обнуление вектора а
@@ -167,64 +147,22 @@ namespace Task1
                     a[i - 1] = 0;
                 }
             } 
-            // Обнуление правого предпоследнего элемента
-            if (q[n - 2] != 0 && q[n - 1] != 0)
+            
+            f[n-1] = f[n-1] / b[n-1];
+            f_real[n-1] = f_real[n-1] / b[n-1];
+            f[n-2] = (f[n - 2] - q[n-2] * f[n-1]) / b[n-2];
+            f[n-3] = (f[n-3] - p[n-3] * f[n-2] - q[n-3]*f[n-1])/b[n-3];    
+            f_real[n-2] = (f_real[n - 2] - q[n-2]*f_real[n-1]) / b[n-2];
+            f_real[n-3] = (f_real[n-3] - p[n-3] * f_real[n-2] - q[n-3]*f_real[n-1])/b[n-3];
+            for (int i = n - 4; i >= 0; i--)
             {
-                f[n - 2] -= q[n - 2] / q[n - 1] * f[n - 1];
-                f_real[n - 2] -= q[n - 2] / q[n - 1] * f_real[n - 1];
-
-                c[n - 2] = 0;
-                q[n - 2] = 0;
-                //c[n - 3] = 0;
+                f[i] = (f[i] - q[i] * f[n - 1] - p[i] * f[n - 2] - c[i] * f[i + 1])/b[i];
+                f_real[i] = (f_real[i] - q[i] * f_real[n - 1] - p[i] * f_real[n - 2] - c[i] * f_real[i + 1]) / b[i];
             }
-            // Обнуление n и n-1 столбцов
-            for (int i = n - 3; i >= 0; i--)
-            {
-                if (p[i] != 0 && p[n - 2] != 0)
-                {
-                    f[i] -= f[n - 2] * (p[i] / p[n - 2]);
-                    f_real[i] -= f_real[n - 2] * (p[i] / p[n - 2]);
-                    p[i] = 0;
-                }
-                if (q[i] != 0 && q[n - 1] != 0)
-                {                        
-                    f[i] -= f[n - 1] * (q[i] / q[n - 1]);
-                    f_real[i] -= f_real[n - 1] * (q[i] / q[n - 1]);
-
-                    q[i] = 0;
-                }
-                if (Double.IsInfinity(f[i]))
-                    return null;
-             }
-            c[n - 3] = 0;
-            // Обнуление вектора с
-            for (int i = n - 3; i > 0; i--)
-            {
-                if (b[i] != 0 && c[i - 1] != 0)
-                {
-                    div_result = c[i - 1] / b[i];
-                    c[i - 1] = 0;
-                    f[i - 1] -= div_result * f[i];
-                    f_real[i - 1] -= div_result * f_real[i];
-                }
-            }
-            // Формирование результата
-            if (Check_Vectors())
-            {
-                for (int i = 0; i < n; i++)
-                    if (b[i] == 0)
-                    {
-                        solution[i] = 0;
-                        solution_real[i] = 0;
-                    }
-                    else
-                    {
-                        solution[i] = f[i] / b[i];
-                        solution_real[i] = f_real[i] / b[i];
-                    }
-                return solution;
-            }
-            else return null;
+            if (f.Contains(Double.NaN) || f.Contains(Double.PositiveInfinity) || f.Contains(Double.NegativeInfinity)
+                || f_real.Contains(Double.NaN) || f_real.Contains(Double.PositiveInfinity) || f_real.Contains(Double.NegativeInfinity))
+                return null;
+            return f;
         }
     }
 }
